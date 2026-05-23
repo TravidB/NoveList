@@ -31,6 +31,7 @@ public class NovelService {
             existing.setProgressType(updated.getProgressType());
             existing.setProgress(updated.getProgress());
             existing.setCoverUrl(updated.getCoverUrl());
+            existing.setTags(updated.getTags());
             return repository.save(existing);
         });
     }

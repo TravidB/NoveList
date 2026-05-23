@@ -35,7 +35,12 @@
                 <input type="number" id="progress" min="0" value="0">
             </div>
             <div class="form-group">
-                <label>Cover Image <span style="font-weight:normal;color:#a08060;">(optional)</span></label>
+                <label>Tags <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
+                <div class="tag-picker" id="tagPicker"></div>
+                <input type="hidden" id="tagsInput">
+            </div>
+            <div class="form-group">
+                <label>Cover Image <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
                 <input type="file" id="coverFile" accept="image/*" class="file-input">
                 <span class="paste-hint">or press Ctrl+V anywhere to paste a screenshot</span>
                 <img id="coverPreview" class="cover-preview" style="display:none;" alt="preview">
@@ -98,7 +103,8 @@
                 author: document.getElementById('author').value.trim(),
                 progressType: document.querySelector('input[name="progressType"]:checked').value,
                 progress: parseInt(document.getElementById('progress').value) || 0,
-                coverUrl: document.getElementById('coverUrl').value.trim() || null
+                coverUrl: document.getElementById('coverUrl').value.trim() || null,
+                tags: document.getElementById('tagsInput').value || null
             };
 
             const res = await fetch('/api/novels', {
@@ -112,6 +118,21 @@
             } else {
                 showToast('Something went wrong. Please try again.');
             }
+        });
+
+        const TAGS = ['Fiction','Romance','Action','Mystery','Horror','Fantasy','Sci-Fi','Adventure','Comedy','Drama','Thriller','Historical','Cultivation','Xianxia','Slice of Life','Supernatural','Psychological','Sports','Martial Arts','Isekai','Tragedy','School Life','Magic','Harem','Mecha'];
+        const selectedTags = new Set();
+        TAGS.forEach(tag => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tag-pick';
+            btn.textContent = tag;
+            btn.addEventListener('click', () => {
+                if (selectedTags.has(tag)) { selectedTags.delete(tag); btn.classList.remove('selected'); }
+                else { selectedTags.add(tag); btn.classList.add('selected'); }
+                document.getElementById('tagsInput').value = [...selectedTags].join(',');
+            });
+            document.getElementById('tagPicker').appendChild(btn);
         });
 
         function showToast(msg) {

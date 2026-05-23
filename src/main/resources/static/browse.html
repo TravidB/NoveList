@@ -43,6 +43,41 @@
             list.innerHTML = novels.map(n => cardHtml(n)).join('');
         }
 
+        const TAGS = ['Fiction','Romance','Action','Mystery','Horror','Fantasy','Sci-Fi','Adventure','Comedy','Drama','Thriller','Historical','Cultivation','Xianxia','Slice of Life','Supernatural','Psychological','Sports','Martial Arts','Isekai','Tragedy','School Life','Magic','Harem','Mecha'];
+
+        function tagsHtml(tags) {
+            if (!tags) return '';
+            const list = tags.split(',').filter(t => t);
+            if (list.length === 0) return '';
+            const MAX = 4;
+            let html = list.map((t, i) =>
+                `<span class="tag${i >= MAX ? ' tag-hidden' : ''}">${escapeHtml(t)}</span>`
+            ).join('');
+            if (list.length > MAX) {
+                html += `<span class="tag-more" onclick="expandTags(this)">+${list.length - MAX} more</span>`;
+            }
+            return html;
+        }
+
+        function expandTags(el) {
+            el.parentElement.querySelectorAll('.tag-hidden').forEach(t => t.classList.remove('tag-hidden'));
+            el.remove();
+        }
+
+        function tagPickerHtml(id, currentTags) {
+            const selected = currentTags ? currentTags.split(',').filter(t => t) : [];
+            return TAGS.map(tag => {
+                const active = selected.includes(tag) ? ' selected' : '';
+                return `<button type="button" class="tag-pick${active}" onclick="toggleEditTag(this,${id})">${tag}</button>`;
+            }).join('');
+        }
+
+        function toggleEditTag(btn, id) {
+            btn.classList.toggle('selected');
+            const selected = [...document.querySelectorAll(`#edit-tag-picker-${id} .tag-pick.selected`)].map(b => b.textContent);
+            document.getElementById(`edit-tags-${id}`).value = selected.join(',');
+        }
+
         const PLACEHOLDER_HTML = `<div class="card-cover cover-placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#c4a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>`;
 
         function showCoverFallback(el) { el.outerHTML = PLACEHOLDER_HTML; }
@@ -61,9 +96,11 @@
                     data-author="${escapeHtml(n.author)}"
                     data-progress-type="${n.progressType}"
                     data-progress="${n.progress}"
-                    data-cover-url="${escapeHtml(n.coverUrl || '')}">
+                    data-cover-url="${escapeHtml(n.coverUrl || '')}"
+                    data-tags="${escapeHtml(n.tags || '')}">
                     ${coverHtml(n.coverUrl)}
                     <div class="card-info">
+                        <div class="card-tags">${tagsHtml(n.tags)}</div>
                         <h3>${escapeHtml(n.title)}</h3>
                         <p>by ${escapeHtml(n.author)}</p>
                         <p>${n.progressType === 'CHAPTER' ? 'Chapter' : 'Page'} ${n.progress}</p>
@@ -85,6 +122,7 @@
             const progressType = card.dataset.progressType;
             const progress = card.dataset.progress;
             const coverUrl = card.dataset.coverUrl;
+            const tags = card.dataset.tags || '';
             document.getElementById(`card-${id}`).outerHTML = `
                 <div class="card" id="card-${id}">
                     <div style="width:100%;">
@@ -114,6 +152,11 @@
                             <input type="file" accept="image/*" class="file-input" onchange="uploadEditCover(this, ${id})">
                             <span class="paste-hint">or press Ctrl+V to paste a screenshot</span>
                             <input type="hidden" id="edit-cover-${id}" value="${coverUrl}">
+                        </div>
+                        <div class="form-group">
+                            <label>Tags <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
+                            <div class="tag-picker" id="edit-tag-picker-${id}">${tagPickerHtml(id, tags)}</div>
+                            <input type="hidden" id="edit-tags-${id}" value="${escapeHtml(tags)}">
                         </div>
                         <div style="display:flex;gap:8px;margin-top:8px;">
                             <button class="btn" style="width:auto;padding:8px 16px;margin:0;" onclick="saveEdit(${id})">Save</button>
@@ -163,7 +206,8 @@
                 author: document.getElementById(`edit-author-${id}`).value.trim(),
                 progressType: document.querySelector(`input[name="edit-type-${id}"]:checked`).value,
                 progress: parseInt(document.getElementById(`edit-progress-${id}`).value) || 0,
-                coverUrl: document.getElementById(`edit-cover-${id}`).value.trim() || null
+                coverUrl: document.getElementById(`edit-cover-${id}`).value.trim() || null,
+                tags: document.getElementById(`edit-tags-${id}`).value || null
             };
             const res = await fetch(`/api/novels/${id}`, {
                 method: 'PUT',

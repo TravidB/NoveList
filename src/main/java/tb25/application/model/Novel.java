@@ -17,6 +17,8 @@ public class Novel {
     private String progressType; // "CHAPTER" or "PAGE"
     private int progress;
     private String coverUrl;
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String tags;
 
     public Novel() {}
 
@@ -38,4 +40,6 @@ public class Novel {
     public void setProgress(int progress) { this.progress = progress; }
     public String getCoverUrl() { return coverUrl; }
     public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
 }
