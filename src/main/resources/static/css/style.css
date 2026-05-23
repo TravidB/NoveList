@@ -105,6 +105,56 @@ input:disabled { background: #ece6dc; color: #888; cursor: not-allowed; }
     align-items: center;
 }
 
+.file-input {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: #2c1810;
+    cursor: pointer;
+}
+
+.paste-hint {
+    font-size: 0.8rem;
+    color: #a08060;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.remove-cover-btn {
+    width: auto;
+    padding: 4px 12px;
+    margin: 6px 0 0 0;
+    font-size: 0.8rem;
+}
+
+.cover-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-top: 8px;
+    border: 1px solid #ddd0bc;
+}
+
+.card-cover {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 14px;
+}
+
+.cover-placeholder {
+    background: #f5f0e8;
+    border: 1px solid #ddd0bc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.cover-placeholder svg { width: 36px; height: 36px; }
+
 .card-info h3 {
     font-family: 'Merriweather', serif;
     font-size: 1rem;

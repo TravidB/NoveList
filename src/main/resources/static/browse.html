@@ -20,6 +20,14 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        let activeEditId = null;
+
+        document.addEventListener('paste', (e) => {
+            if (activeEditId === null) return;
+            const item = [...e.clipboardData.items].find(i => i.type.startsWith('image/'));
+            if (item) uploadEditCover({ files: [item.getAsFile()] }, activeEditId);
+        });
+
         async function loadNovels() {
             const res = await fetch('/api/novels');
             const novels = await res.json();
@@ -30,17 +38,144 @@
                 return;
             }
 
-            list.innerHTML = novels.map(n => `
-                <div class="card" id="card-${n.id}">
+            list.innerHTML = novels.map(n => cardHtml(n)).join('');
+        }
+
+        const PLACEHOLDER_HTML = `<div class="card-cover cover-placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#c4a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>`;
+
+        function showCoverFallback(el) { el.outerHTML = PLACEHOLDER_HTML; }
+
+        function coverHtml(coverUrl) {
+            if (coverUrl) {
+                return `<img class="card-cover" src="${escapeHtml(coverUrl)}" alt="cover" onerror="showCoverFallback(this)">`;
+            }
+            return PLACEHOLDER_HTML;
+        }
+
+        function cardHtml(n) {
+            return `
+                <div class="card" id="card-${n.id}"
+                    data-title="${escapeHtml(n.title)}"
+                    data-author="${escapeHtml(n.author)}"
+                    data-progress-type="${n.progressType}"
+                    data-progress="${n.progress}"
+                    data-cover-url="${escapeHtml(n.coverUrl || '')}">
+                    ${coverHtml(n.coverUrl)}
                     <div class="card-info">
                         <h3>${escapeHtml(n.title)}</h3>
                         <p>by ${escapeHtml(n.author)}</p>
                         <p>${n.progressType === 'CHAPTER' ? 'Chapter' : 'Page'} ${n.progress}</p>
                     </div>
-                    <button class="btn danger" style="width:auto;padding:8px 16px;margin:0;"
-                        onclick="deleteNovel(${n.id})">Remove</button>
-                </div>
-            `).join('');
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn secondary" style="width:auto;padding:8px 16px;margin:0;"
+                            onclick="showEditForm(${n.id})">Edit</button>
+                        <button class="btn danger" style="width:auto;padding:8px 16px;margin:0;"
+                            onclick="deleteNovel(${n.id})">Remove</button>
+                    </div>
+                </div>`;
+        }
+
+        function showEditForm(id) {
+            activeEditId = id;
+            const card = document.getElementById(`card-${id}`);
+            const title = card.dataset.title;
+            const author = card.dataset.author;
+            const progressType = card.dataset.progressType;
+            const progress = card.dataset.progress;
+            const coverUrl = card.dataset.coverUrl;
+            document.getElementById(`card-${id}`).outerHTML = `
+                <div class="card" id="card-${id}">
+                    <div style="width:100%;">
+                        <div class="form-group">
+                            <label>Novel Name</label>
+                            <input type="text" id="edit-title-${id}" value="${title}">
+                        </div>
+                        <div class="form-group">
+                            <label>Author Name</label>
+                            <input type="text" id="edit-author-${id}" value="${author}">
+                        </div>
+                        <div class="form-group">
+                            <label>Progress Tracker</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="edit-type-${id}" value="CHAPTER" ${progressType === 'CHAPTER' ? 'checked' : ''}> Chapter</label>
+                                <label><input type="radio" name="edit-type-${id}" value="PAGE" ${progressType === 'PAGE' ? 'checked' : ''}> Page</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label id="edit-prog-label-${id}">${progressType === 'CHAPTER' ? 'Current Chapter' : 'Current Page'}</label>
+                            <input type="number" id="edit-progress-${id}" min="0" value="${progress}">
+                        </div>
+                        <div class="form-group">
+                            <label>Cover Image <span style="font-weight:normal;color:#a08060;">(optional)</span></label>
+                            ${coverUrl ? `<img id="edit-cover-preview-${id}" class="cover-preview" src="${coverUrl}" alt="preview">` : `<img id="edit-cover-preview-${id}" class="cover-preview" style="display:none;" alt="preview">`}
+                            ${coverUrl ? `<button type="button" id="edit-remove-cover-${id}" class="btn danger remove-cover-btn" onclick="removeEditCover(${id})">Remove Image</button>` : `<button type="button" id="edit-remove-cover-${id}" class="btn danger remove-cover-btn" style="display:none;" onclick="removeEditCover(${id})">Remove Image</button>`}
+                            <input type="file" accept="image/*" class="file-input" onchange="uploadEditCover(this, ${id})">
+                            <span class="paste-hint">or press Ctrl+V to paste a screenshot</span>
+                            <input type="hidden" id="edit-cover-${id}" value="${coverUrl}">
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <button class="btn" style="width:auto;padding:8px 16px;margin:0;" onclick="saveEdit(${id})">Save</button>
+                            <button class="btn secondary" style="width:auto;padding:8px 16px;margin:0;" onclick="loadNovels()">Cancel</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.querySelectorAll(`input[name="edit-type-${id}"]`).forEach(r =>
+                r.addEventListener('change', () => {
+                    document.getElementById(`edit-prog-label-${id}`).textContent =
+                        r.value === 'CHAPTER' ? 'Current Chapter' : 'Current Page';
+                })
+            );
+        }
+
+        function removeEditCover(id) {
+            document.getElementById(`edit-cover-${id}`).value = '';
+            const preview = document.getElementById(`edit-cover-preview-${id}`);
+            preview.src = '';
+            preview.style.display = 'none';
+            document.getElementById(`edit-remove-cover-${id}`).style.display = 'none';
+        }
+
+        async function uploadEditCover(input, id) {
+            const file = input.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/api/covers', { method: 'POST', body: formData });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById(`edit-cover-${id}`).value = data.url;
+                const preview = document.getElementById(`edit-cover-preview-${id}`);
+                preview.src = data.url;
+                preview.style.display = 'block';
+                document.getElementById(`edit-remove-cover-${id}`).style.display = 'inline-block';
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showToast('Upload failed: ' + (err.error || res.status));
+            }
+        }
+
+        async function saveEdit(id) {
+            const novel = {
+                title: document.getElementById(`edit-title-${id}`).value.trim(),
+                author: document.getElementById(`edit-author-${id}`).value.trim(),
+                progressType: document.querySelector(`input[name="edit-type-${id}"]:checked`).value,
+                progress: parseInt(document.getElementById(`edit-progress-${id}`).value) || 0,
+                coverUrl: document.getElementById(`edit-cover-${id}`).value.trim() || null
+            };
+            const res = await fetch(`/api/novels/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novel)
+            });
+            if (res.ok) {
+                activeEditId = null;
+                const updated = await res.json();
+                document.getElementById(`card-${id}`).outerHTML = cardHtml(updated);
+                showToast('Novel updated.');
+            } else {
+                showToast('Something went wrong.');
+            }
         }
 
         async function deleteNovel(id) {

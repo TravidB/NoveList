@@ -16,6 +16,7 @@ public class Novel {
     private String author;
     private String progressType; // "CHAPTER" or "PAGE"
     private int progress;
+    private String coverUrl;
 
     public Novel() {}
 
@@ -35,4 +36,6 @@ public class Novel {
     public void setProgressType(String progressType) { this.progressType = progressType; }
     public int getProgress() { return progress; }
     public void setProgress(int progress) { this.progress = progress; }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
 }
