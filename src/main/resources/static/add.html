@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Novel – Esy Collection</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="nav"><a href="/index.html">← Back to Home</a></div>
+        <h1>Esy Collection</h1>
+        <h2>Add Novel</h2>
+
+        <form id="addForm">
+            <div class="form-group">
+                <label for="title">Novel Name</label>
+                <input type="text" id="title" placeholder="e.g. The Great Gatsby" required>
+            </div>
+            <div class="form-group">
+                <label for="author">Author Name</label>
+                <input type="text" id="author" placeholder="e.g. F. Scott Fitzgerald" required>
+            </div>
+            <div class="form-group">
+                <label>Progress Tracker</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="progressType" value="CHAPTER" checked> Chapter</label>
+                    <label><input type="radio" name="progressType" value="PAGE"> Page</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="progress" id="progressLabel">Current Chapter</label>
+                <input type="number" id="progress" min="0" value="0">
+            </div>
+            <button type="submit" class="btn">Save Novel</button>
+        </form>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const radios = document.querySelectorAll('input[name="progressType"]');
+        const progressLabel = document.getElementById('progressLabel');
+
+        radios.forEach(r => r.addEventListener('change', () => {
+            progressLabel.textContent = r.value === 'CHAPTER' ? 'Current Chapter' : 'Current Page';
+        }));
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const novel = {
+                title: document.getElementById('title').value.trim(),
+                author: document.getElementById('author').value.trim(),
+                progressType: document.querySelector('input[name="progressType"]:checked').value,
+                progress: parseInt(document.getElementById('progress').value) || 0
+            };
+
+            const res = await fetch('/api/novels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novel)
+            });
+
+            if (res.ok) {
+                window.location.href = '/browse.html';
+            } else {
+                showToast('Something went wrong. Please try again.');
+            }
+        });
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>

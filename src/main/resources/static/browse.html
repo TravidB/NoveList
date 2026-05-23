@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Novels – Esy Collection</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="nav"><a href="/index.html">← Back to Home</a></div>
+        <h1>Esy Collection</h1>
+        <h2>Your Novels</h2>
+
+        <a href="/add.html" class="btn secondary" style="margin-bottom:24px;">+ Add Novel</a>
+
+        <div id="novelList"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        async function loadNovels() {
+            const res = await fetch('/api/novels');
+            const novels = await res.json();
+            const list = document.getElementById('novelList');
+
+            if (novels.length === 0) {
+                list.innerHTML = '<p class="empty-state">No novels yet. Add one to get started!</p>';
+                return;
+            }
+
+            list.innerHTML = novels.map(n => `
+                <div class="card" id="card-${n.id}">
+                    <div class="card-info">
+                        <h3>${escapeHtml(n.title)}</h3>
+                        <p>by ${escapeHtml(n.author)}</p>
+                        <p>${n.progressType === 'CHAPTER' ? 'Chapter' : 'Page'} ${n.progress}</p>
+                    </div>
+                    <button class="btn danger" style="width:auto;padding:8px 16px;margin:0;"
+                        onclick="deleteNovel(${n.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteNovel(id) {
+            const res = await fetch(`/api/novels/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                document.getElementById(`card-${id}`).remove();
+                if (!document.querySelector('.card')) {
+                    document.getElementById('novelList').innerHTML =
+                        '<p class="empty-state">No novels yet. Add one to get started!</p>';
+                }
+                showToast('Novel removed.');
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        loadNovels();
+    </script>
+</body>
+</html>
