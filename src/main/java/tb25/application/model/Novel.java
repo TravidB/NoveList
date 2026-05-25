@@ -19,6 +19,8 @@ public class Novel {
     private String coverUrl;
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String tags;
+    @jakarta.persistence.Column(columnDefinition = "INTEGER DEFAULT 0")
+    private int rating;
 
     public Novel() {}
 
@@ -42,4 +44,6 @@ public class Novel {
     public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
 }

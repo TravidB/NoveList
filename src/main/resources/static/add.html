@@ -35,6 +35,13 @@
                 <input type="number" id="progress" min="0" value="0">
             </div>
             <div class="form-group">
+                <label>Rating <span style="font-weight:normal;color:var(--text-muted);">(optional — click a star, click again to clear)</span></label>
+                <div class="star-picker" id="starPicker">
+                    <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                </div>
+                <input type="hidden" id="ratingInput" value="0">
+            </div>
+            <div class="form-group">
                 <label>Tags <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
                 <div class="tag-picker" id="tagPicker"></div>
                 <input type="hidden" id="tagsInput">
@@ -104,7 +111,8 @@
                 progressType: document.querySelector('input[name="progressType"]:checked').value,
                 progress: parseInt(document.getElementById('progress').value) || 0,
                 coverUrl: document.getElementById('coverUrl').value.trim() || null,
-                tags: document.getElementById('tagsInput').value || null
+                tags: document.getElementById('tagsInput').value || null,
+                rating: parseInt(document.getElementById('ratingInput').value) || 0
             };
 
             const res = await fetch('/api/novels', {
@@ -118,6 +126,24 @@
             } else {
                 showToast('Something went wrong. Please try again.');
             }
+        });
+
+        // Star picker
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('#starPicker .star');
+        stars.forEach((star, i) => {
+            star.addEventListener('click', () => {
+                const clicked = i + 1;
+                selectedRating = selectedRating === clicked ? 0 : clicked;
+                stars.forEach((s, j) => s.classList.toggle('filled', j < selectedRating));
+                document.getElementById('ratingInput').value = selectedRating;
+            });
+            star.addEventListener('mouseenter', () => {
+                stars.forEach((s, j) => s.classList.toggle('filled', j <= i));
+            });
+            star.addEventListener('mouseleave', () => {
+                stars.forEach((s, j) => s.classList.toggle('filled', j < selectedRating));
+            });
         });
 
         const TAGS = ['Fiction','Romance','Action','Mystery','Horror','Fantasy','Sci-Fi','Adventure','Comedy','Drama','Thriller','Historical','Cultivation','Xianxia','Slice of Life','Supernatural','Psychological','Sports','Martial Arts','Isekai','Tragedy','School Life','Magic','Harem','Mecha'];

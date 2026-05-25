@@ -244,6 +244,24 @@ input:disabled { background: var(--disabled-bg); color: var(--disabled-text); cu
 }
 .tag-more:hover { background: var(--primary); color: #fff; }
 
+/* ── Stars ─────────────────────────────────────────── */
+.star-picker { display: flex; gap: 6px; margin-top: 4px; }
+
+.star {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.1s, transform 0.1s;
+    line-height: 1;
+    user-select: none;
+}
+.star.filled   { color: #f0a500; }
+.star:hover    { transform: scale(1.15); }
+
+.card-stars { display: flex; gap: 2px; margin-top: 3px; }
+.star-display       { font-size: 0.9rem; color: var(--card-border); }
+.star-display.filled { color: #f0a500; }
+
 /* ── Theme toggle ──────────────────────────────────── */
 .theme-toggle {
     position: fixed;
