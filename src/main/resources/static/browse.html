@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Novels – NoveList</title>
     <script src="/js/theme.js"></script>
+    <script src="/js/auth.js"></script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -32,6 +33,7 @@
 
         async function loadNovels() {
             const res = await fetch('/api/novels');
+            if (res.status === 401) { window.location.href = '/index.html'; return; }
             const novels = await res.json();
             const list = document.getElementById('novelList');
 
@@ -284,7 +286,9 @@
             setTimeout(() => t.classList.remove('show'), 2500);
         }
 
-        loadNovels();
+        document.addEventListener('DOMContentLoaded', function () {
+            initAuth({ requireAuth: true, onReady: loadNovels });
+        });
     </script>
 </body>
 </html>

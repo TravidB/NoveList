@@ -3,7 +3,6 @@ package tb25.application.service;
 import org.springframework.stereotype.Service;
 import tb25.application.model.Novel;
 import tb25.application.repository.NovelRepository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,16 +15,16 @@ public class NovelService {
         this.repository = repository;
     }
 
-    public List<Novel> getAll() {
-        return repository.findAll();
+    public List<Novel> getAll(Long userId) {
+        return repository.findByUserId(userId);
     }
 
     public Novel save(Novel novel) {
         return repository.save(novel);
     }
 
-    public Optional<Novel> update(Long id, Novel updated) {
-        return repository.findById(id).map(existing -> {
+    public Optional<Novel> update(Long id, Long userId, Novel updated) {
+        return repository.findByIdAndUserId(id, userId).map(existing -> {
             existing.setTitle(updated.getTitle());
             existing.setAuthor(updated.getAuthor());
             existing.setProgressType(updated.getProgressType());
@@ -37,8 +36,8 @@ public class NovelService {
         });
     }
 
-    public boolean delete(Long id) {
-        if (!repository.existsById(id)) return false;
+    public boolean delete(Long id, Long userId) {
+        if (!repository.existsByIdAndUserId(id, userId)) return false;
         repository.deleteById(id);
         return true;
     }

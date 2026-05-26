@@ -262,6 +262,106 @@ input:disabled { background: var(--disabled-bg); color: var(--disabled-text); cu
 .star-display       { font-size: 0.9rem; color: var(--card-border); }
 .star-display.filled { color: #f0a500; }
 
+/* ── User corner (top-left) ────────────────────────── */
+#userCorner {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 100;
+}
+
+.user-corner-btn {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+.user-corner-btn:hover { background: var(--card-border); }
+
+.user-corner-menu { position: relative; display: inline-block; }
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    min-width: 120px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    z-index: 200;
+    overflow: hidden;
+}
+
+.user-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Open Sans', sans-serif;
+    transition: background-color 0.15s;
+}
+.user-dropdown-item:hover { background: var(--card-border); }
+
+/* ── Auth modal ─────────────────────────────────────── */
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+}
+
+.auth-modal {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 380px;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    color: var(--text-muted);
+    font-family: 'Merriweather', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+}
+.auth-tab.active { color: var(--heading-primary); border-bottom-color: var(--primary); }
+
+.auth-error {
+    color: var(--danger);
+    font-size: 0.82rem;
+    min-height: 1.1em;
+    margin-bottom: 4px;
+}
+
 /* ── Theme toggle ──────────────────────────────────── */
 .theme-toggle {
     position: fixed;
