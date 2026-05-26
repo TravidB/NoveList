@@ -99,7 +99,8 @@ h2 { font-size: 1.4rem; color: var(--heading-secondary); margin-bottom: 32px; }
 label { font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="password"] {
     padding: 10px 12px;
     border: 1px solid var(--input-border);
     border-radius: 6px;
