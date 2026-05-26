@@ -32,6 +32,7 @@ public class NovelService {
             existing.setCoverUrl(updated.getCoverUrl());
             existing.setTags(updated.getTags());
             existing.setRating(updated.getRating());
+            existing.setStatus(updated.getStatus());
             return repository.save(existing);
         });
     }

@@ -80,6 +80,26 @@
             document.getElementById(`edit-tags-${id}`).value = selected.join(',');
         }
 
+        const STATUS_LABELS = { UNREAD: 'Unread', READING: 'Reading', COMPLETED: 'Completed', PLANNING: 'Planning to Read' };
+
+        function statusHtml(status) {
+            const s = status || 'UNREAD';
+            return `<span class="status-badge status-${s.toLowerCase()}">${STATUS_LABELS[s] || 'Unread'}</span>`;
+        }
+
+        function statusPickerHtml(id, current) {
+            const s = current || 'UNREAD';
+            return Object.entries(STATUS_LABELS).map(([val, label]) =>
+                `<button type="button" class="status-pick${val === s ? ' selected' : ''}" data-value="${val}" onclick="selectEditStatus(this,${id})">${label}</button>`
+            ).join('');
+        }
+
+        function selectEditStatus(btn, id) {
+            document.querySelectorAll(`#edit-status-picker-${id} .status-pick`).forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById(`edit-status-${id}`).value = btn.dataset.value;
+        }
+
         function starsHtml(rating) {
             return Array.from({length: 5}, (_, i) =>
                 `<span class="star-display${i < rating ? ' filled' : ''}">★</span>`
@@ -106,9 +126,11 @@
                     data-progress="${n.progress}"
                     data-cover-url="${escapeHtml(n.coverUrl || '')}"
                     data-tags="${escapeHtml(n.tags || '')}"
-                    data-rating="${n.rating || 0}">
+                    data-rating="${n.rating || 0}"
+                    data-status="${n.status || 'UNREAD'}">
                     ${coverHtml(n.coverUrl)}
                     <div class="card-info">
+                        ${statusHtml(n.status)}
                         <div class="card-tags">${tagsHtml(n.tags)}</div>
                         <h3>${escapeHtml(n.title)}</h3>
                         <p>by ${escapeHtml(n.author)}</p>
@@ -134,6 +156,7 @@
             const coverUrl = card.dataset.coverUrl;
             const tags = card.dataset.tags || '';
             const rating = parseInt(card.dataset.rating) || 0;
+            const status = card.dataset.status || 'UNREAD';
             document.getElementById(`card-${id}`).outerHTML = `
                 <div class="card" id="card-${id}">
                     <div style="width:100%;">
@@ -168,6 +191,11 @@
                             <label>Tags <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
                             <div class="tag-picker" id="edit-tag-picker-${id}">${tagPickerHtml(id, tags)}</div>
                             <input type="hidden" id="edit-tags-${id}" value="${escapeHtml(tags)}">
+                        </div>
+                        <div class="form-group">
+                            <label>Reading Status</label>
+                            <div class="status-picker" id="edit-status-picker-${id}">${statusPickerHtml(id, status)}</div>
+                            <input type="hidden" id="edit-status-${id}" value="${status}">
                         </div>
                         <div class="form-group">
                             <label>Rating <span style="font-weight:normal;color:var(--text-muted);">(optional — click a star, click again to clear)</span></label>
@@ -246,8 +274,9 @@
                 progress: parseInt(document.getElementById(`edit-progress-${id}`).value) || 0,
                 coverUrl: document.getElementById(`edit-cover-${id}`).value.trim() || null,
                 tags: document.getElementById(`edit-tags-${id}`).value || null,
-                rating: parseInt(document.getElementById(`edit-rating-${id}`).value) || 0
-            };
+                rating: parseInt(document.getElementById(`edit-rating-${id}`).value) || 0,
+                status: document.getElementById(`edit-status-${id}`).value || 'UNREAD'
+            }
             const res = await fetch(`/api/novels/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

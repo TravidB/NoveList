@@ -21,6 +21,8 @@ public class Novel {
     private String tags;
     @jakarta.persistence.Column(columnDefinition = "INTEGER DEFAULT 0")
     private int rating;
+    @jakarta.persistence.Column(name = "read_status", columnDefinition = "VARCHAR(20) DEFAULT 'UNREAD'")
+    private String status;
     private Long userId;
 
     public Novel() {}
@@ -47,6 +49,8 @@ public class Novel {
     public void setTags(String tags) { this.tags = tags; }
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
+    public String getStatus() { return status != null ? status : "UNREAD"; }
+    public void setStatus(String status) { this.status = status; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 }

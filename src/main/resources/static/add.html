@@ -36,6 +36,16 @@
                 <input type="number" id="progress" min="0" value="0">
             </div>
             <div class="form-group">
+                <label>Reading Status</label>
+                <div class="status-picker" id="statusPicker">
+                    <button type="button" class="status-pick selected" data-value="UNREAD">Unread</button>
+                    <button type="button" class="status-pick" data-value="READING">Reading</button>
+                    <button type="button" class="status-pick" data-value="COMPLETED">Completed</button>
+                    <button type="button" class="status-pick" data-value="PLANNING">Planning to Read</button>
+                </div>
+                <input type="hidden" id="statusInput" value="UNREAD">
+            </div>
+            <div class="form-group">
                 <label>Rating <span style="font-weight:normal;color:var(--text-muted);">(optional — click a star, click again to clear)</span></label>
                 <div class="star-picker" id="starPicker">
                     <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
@@ -113,7 +123,8 @@
                 progress: parseInt(document.getElementById('progress').value) || 0,
                 coverUrl: document.getElementById('coverUrl').value.trim() || null,
                 tags: document.getElementById('tagsInput').value || null,
-                rating: parseInt(document.getElementById('ratingInput').value) || 0
+                rating: parseInt(document.getElementById('ratingInput').value) || 0,
+                status: document.getElementById('statusInput').value || 'UNREAD'
             };
 
             const res = await fetch('/api/novels', {
@@ -129,6 +140,16 @@
             } else {
                 showToast('Something went wrong. Please try again.');
             }
+        });
+
+        // Status picker
+        const statusPicks = document.querySelectorAll('#statusPicker .status-pick');
+        statusPicks.forEach(btn => {
+            btn.addEventListener('click', () => {
+                statusPicks.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('statusInput').value = btn.dataset.value;
+            });
         });
 
         // Star picker
